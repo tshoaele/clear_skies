@@ -4,141 +4,338 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clear Skies - Freedom Tracker</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = { darkMode: 'class' };
-</script>
 <style>
-  body { font-family: system-ui, -apple-system, sans-serif; }
-  .chain-cell { width: 100%; aspect-ratio: 1; border-radius: 4px; }
-  .spinner {
-    width: 2rem; height: 2rem; border-radius: 9999px;
-    border: 3px solid currentColor; border-top-color: transparent;
-    animation: spin 1s linear infinite; margin: 0 auto;
+  /*
+    Hand written CSS, no external stylesheets or fonts, so this file works
+    fully offline after the first open, nothing is fetched from the internet.
+    Colours live in CSS variables so the light and dark themes are just two
+    small variable blocks instead of two copies of every rule.
+  */
+  :root {
+    --bg: #ffffff;
+    --bg-soft: #f8fafc;
+    --bg-input: #ffffff;
+    --bg-hover: #e2e8f0;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --text-faint: #94a3b8;
+    --accent: #059669;
+    --accent-soft: #10b981;
+    --accent-bg: #ecfdf5;
+    --accent-border: #a7f3d0;
+    --amber-bg: #fffbeb;
+    --amber-border: #fde68a;
+    --amber-text: #b45309;
+    --amber-text-soft: #92400e;
+    --rose: #e11d48;
+    --indigo: #4f46e5;
+    --overlay: rgba(2, 6, 23, 0.85);
   }
+  html.dark {
+    --bg: #0f172a;
+    --bg-soft: #1e293b;
+    --bg-input: #0f172a;
+    --bg-hover: #334155;
+    --border: #334155;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-faint: #64748b;
+    --accent: #34d399;
+    --accent-soft: #34d399;
+    --accent-bg: rgba(16, 185, 129, 0.12);
+    --accent-border: rgba(16, 185, 129, 0.3);
+    --amber-bg: rgba(245, 158, 11, 0.1);
+    --amber-border: rgba(245, 158, 11, 0.2);
+    --amber-text: #fcd34d;
+    --amber-text-soft: #fde68a;
+    --rose: #fb7185;
+    --indigo: #818cf8;
+    --overlay: rgba(2, 6, 23, 0.9);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 3rem;
+    transition: background-color .2s, color .2s;
+  }
+  .hidden { display: none !important; }
+
+  header {
+    padding: 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .theme-toggle {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg-soft);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    color: var(--accent);
+    margin: 0;
+  }
+  .subtitle { font-size: .75rem; color: var(--text-muted); margin: .35rem 0 0; }
+
+  main {
+    max-width: 28rem;
+    margin: 0 auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .card {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.25rem;
+  }
+  .card h2 { margin: 0 0 .5rem; font-size: 1.05rem; font-weight: 600; }
+  .card h3 { margin: 0 0 .5rem; font-size: .875rem; font-weight: 600; display: flex; align-items: center; gap: .4rem; }
+  .card p.lead { font-size: .875rem; color: var(--text-muted); margin: 0 0 1rem; }
+  .card p.note { font-size: .75rem; color: var(--text-muted); margin: 0 0 .5rem; }
+
+  .field { margin-bottom: .75rem; }
+  .field label { display: block; font-size: .75rem; color: var(--text-muted); margin-bottom: .3rem; }
+  .input {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: .5rem;
+    padding: .75rem;
+    font-size: .875rem;
+    color: var(--text);
+  }
+  .input:focus { outline: none; border-color: var(--accent-soft); }
+  .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+  .input-row .input { padding: .6rem; font-size: .75rem; }
+
+  .error-text { font-size: .75rem; color: var(--rose); margin: 0 0 .5rem; }
+
+  .btn {
+    width: 100%;
+    border: none;
+    border-radius: .5rem;
+    padding: .75rem;
+    font-size: .875rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-primary { background: var(--accent); color: #ffffff; }
+  .btn-primary:hover { opacity: .9; }
+  .btn-secondary { background: var(--bg-hover); color: var(--text); }
+  .btn-secondary:hover { opacity: .85; }
+  .btn-amber { background: #f59e0b; color: #1c1917; font-weight: 700; padding: .65rem; border-radius: .75rem; }
+  .btn-amber:hover { opacity: .9; }
+
+  .counter-card { background: var(--bg-soft); text-align: center; }
+  .counter-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .15em; color: var(--accent); font-weight: 600; margin-bottom: .5rem; }
+  .counter-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; margin: 1rem 0; }
+  .counter-cell { background: var(--bg); border: 1px solid var(--border); border-radius: .75rem; padding: .5rem; }
+  .counter-cell .value { display: block; font-size: 1.4rem; font-weight: 700; }
+  .counter-cell .unit { display: block; font-size: .6rem; color: var(--text-muted); text-transform: uppercase; }
+  .avoided { padding-top: 1rem; border-top: 1px solid var(--border); }
+  .avoided .label { font-size: .75rem; color: var(--text-muted); display: block; }
+  .avoided .value { font-size: 1.4rem; font-weight: 700; color: var(--accent); }
+
+  .chain-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: .35rem; }
+  .chain-cell { width: 100%; aspect-ratio: 1; border-radius: 4px; background: var(--bg); border: 1px solid var(--border); }
+  .chain-cell.filled { background: var(--accent-soft); border-color: var(--accent-soft); }
+
+  .craving-card { background: var(--amber-bg); border: 1px solid var(--amber-border); text-align: center; }
+  .craving-card h3 { justify-content: center; color: var(--amber-text-soft); }
+  .craving-card p.lead { color: var(--amber-text); opacity: .85; }
+
+  .milestone-row { display: flex; align-items: center; gap: .75rem; padding: .6rem; border-radius: .75rem; border: 1px solid var(--border); background: var(--bg); font-size: .75rem; color: var(--text-faint); margin-bottom: .5rem; }
+  .milestone-row.achieved { background: var(--accent-bg); border-color: var(--accent-border); color: var(--text); }
+  .milestone-marker { width: 1rem; height: 1rem; border-radius: 50%; border: 1px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: .6rem; font-weight: 700; }
+  .milestone-row.achieved .milestone-marker { background: var(--accent-soft); border-color: var(--accent-soft); color: #ffffff; }
+  .milestone-row.achieved p { font-weight: 500; margin: 0; }
+  .milestone-row p { margin: 0; }
+
+  .prompt-box { font-size: .8rem; color: var(--text-muted); font-style: italic; background: var(--bg); padding: .75rem; border-radius: .5rem; border: 1px solid var(--border); margin-bottom: .75rem; }
+  textarea.input { resize: vertical; font-family: inherit; }
+  #journalList { margin-top: .75rem; display: flex; flex-direction: column; gap: .5rem; }
+  .journal-entry { background: var(--bg); border: 1px solid var(--border); border-radius: .5rem; padding: .6rem; }
+  .journal-entry .date { font-size: .65rem; color: var(--text-faint); margin: 0 0 .25rem; }
+  .journal-entry .text { font-size: .75rem; color: var(--text-muted); margin: 0; }
+
+  .footer-actions { display: flex; justify-content: space-between; font-size: .75rem; padding-top: .5rem; }
+  .footer-actions button { background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: .75rem; padding: 0; }
+  .footer-actions button:hover { color: var(--rose); }
+  .footer-actions button:first-child:hover { color: var(--amber-text); }
+
+  .modal-overlay { position: fixed; inset: 0; background: var(--overlay); display: flex; align-items: center; justify-content: center; padding: 1rem; z-index: 50; }
+  .modal-box { background: var(--bg); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; max-width: 24rem; width: 100%; text-align: center; }
+  .modal-box h3 { font-size: 1.1rem; font-weight: 700; margin: .5rem 0; }
+  .modal-box p { font-size: .8rem; color: var(--text-muted); margin: 0 0 1rem; }
+  .spinner { width: 2rem; height: 2rem; border-radius: 9999px; border: 3px solid #f59e0b; border-top-color: transparent; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
   @keyframes spin { to { transform: rotate(360deg); } }
+  .timer { font-family: "Courier New", monospace; font-size: 2.2rem; font-weight: 700; color: #f59e0b; margin-bottom: 1rem; }
+  .two-min-box { text-align: left; background: var(--bg-soft); border-radius: .5rem; padding: .75rem; margin-bottom: 1rem; }
+  .two-min-box .heading { font-size: .65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .1em; margin: 0 0 .35rem; }
+  .two-min-box p.item { font-size: .75rem; color: var(--text-muted); margin: .2rem 0; }
 </style>
 </head>
-<body class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-screen pb-12 transition-colors">
+<body>
 
-<header class="p-6 text-center border-b border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 backdrop-blur sticky top-0 z-10">
-  <button onclick="toggleTheme()" aria-label="Toggle dark or light theme" class="absolute right-4 top-4 w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-base">
+<header>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark or light theme">
     <span id="themeIconMoon">&#127769;</span>
     <span id="themeIconSun" class="hidden">&#9728;</span>
   </button>
-  <h1 class="text-xl font-bold tracking-wider text-emerald-500 dark:text-emerald-400">CLEAR SKIES</h1>
-  <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" id="identityQuote">Another year added with my kids.</p>
+  <h1>CLEAR SKIES</h1>
+  <p class="subtitle" id="identityQuote">Another year added with my kids.</p>
 </header>
 
-<main class="max-w-md mx-auto p-4 space-y-6">
+<main>
 
   <!-- SETUP -->
-  <section id="setupSection" class="bg-slate-50 dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-xl space-y-4">
-    <h2 class="text-lg font-semibold text-slate-800 dark:text-slate-200">Set Your Freedom Date</h2>
-    <p class="text-sm text-slate-500 dark:text-slate-400">Atomic Habits works on identity first, so start by naming who you are becoming, then set the practical details.</p>
+  <section id="setupSection" class="card">
+    <h2>Set Your Freedom Date</h2>
+    <p class="lead">Atomic Habits works on identity first, so start by naming who you are becoming, then set the practical details.</p>
 
-    <div class="space-y-3">
-      <div>
-        <label for="identityInput" class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Identity statement</label>
-        <input type="text" id="identityInput" placeholder="Another year added with my kids." maxlength="120" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-3 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500">
-      </div>
-      <div>
-        <label for="quitInput" class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Quit date and time</label>
-        <input type="datetime-local" id="quitInput" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-3 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500">
-      </div>
-      <div>
-        <label for="cigsPerDayInput" class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Cigarettes smoked per day</label>
-        <input type="number" id="cigsPerDayInput" value="20" min="1" max="500" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-3 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500">
-      </div>
-      <div>
-        <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Habit stack, when this happens I will do this instead</label>
-        <div class="grid grid-cols-2 gap-2">
-          <input type="text" id="habitCueInput" placeholder="After my coffee" maxlength="60" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500">
-          <input type="text" id="habitReplacementInput" placeholder="I will stretch for 2 minutes" maxlength="60" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500">
-        </div>
-      </div>
-      <p id="setupError" class="text-xs text-rose-500 dark:text-rose-400 hidden"></p>
-      <button onclick="handleSaveSetup()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-lg text-sm transition">
-        Start Your Journey
-      </button>
+    <div class="field">
+      <label>Identity statement</label>
+      <input type="text" id="identityInput" value="Another year added with my kids." maxlength="120" class="input">
     </div>
+    <div class="field">
+      <label>Quit date and time</label>
+      <input type="datetime-local" id="quitInput" class="input">
+    </div>
+    <div class="field">
+      <label>Cigarettes smoked per day</label>
+      <input type="number" id="cigsPerDayInput" value="20" min="1" max="100" class="input">
+    </div>
+    <div class="field">
+      <label>Habit stack, when this happens I will do this instead</label>
+      <div class="input-row">
+        <input type="text" id="habitCueInput" placeholder="After my coffee" maxlength="60" class="input">
+        <input type="text" id="habitReplacementInput" placeholder="I will stretch for 2 minutes" maxlength="60" class="input">
+      </div>
+    </div>
+    <p id="setupError" class="error-text hidden"></p>
+    <button onclick="handleSaveSetup()" class="btn btn-primary">Start Your Journey</button>
   </section>
 
   <!-- DASHBOARD -->
-  <div id="dashboardSection" class="space-y-6 hidden">
+  <div id="dashboardSection" class="hidden" style="display:flex; flex-direction:column; gap:1.5rem;">
 
-    <section class="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/60 rounded-2xl p-6 border border-slate-200 dark:border-slate-700/60 shadow-xl text-center">
-      <div class="text-xs uppercase tracking-widest text-emerald-500 dark:text-emerald-400 font-semibold mb-2">Smoke Free For</div>
-      <div class="grid grid-cols-4 gap-2 text-center my-4">
-        <div class="bg-white dark:bg-slate-900/80 rounded-xl p-2 border border-slate-200 dark:border-slate-800"><span id="days" class="text-2xl font-bold">0</span><span class="block text-[10px] text-slate-500 dark:text-slate-400 uppercase">Days</span></div>
-        <div class="bg-white dark:bg-slate-900/80 rounded-xl p-2 border border-slate-200 dark:border-slate-800"><span id="hours" class="text-2xl font-bold">0</span><span class="block text-[10px] text-slate-500 dark:text-slate-400 uppercase">Hours</span></div>
-        <div class="bg-white dark:bg-slate-900/80 rounded-xl p-2 border border-slate-200 dark:border-slate-800"><span id="minutes" class="text-2xl font-bold">0</span><span class="block text-[10px] text-slate-500 dark:text-slate-400 uppercase">Mins</span></div>
-        <div class="bg-white dark:bg-slate-900/80 rounded-xl p-2 border border-slate-200 dark:border-slate-800"><span id="seconds" class="text-2xl font-bold">0</span><span class="block text-[10px] text-slate-500 dark:text-slate-400 uppercase">Secs</span></div>
+    <section class="card counter-card">
+      <div class="counter-label">Smoke Free For</div>
+      <div class="counter-grid">
+        <div class="counter-cell"><span id="days" class="value">0</span><span class="unit">Days</span></div>
+        <div class="counter-cell"><span id="hours" class="value">0</span><span class="unit">Hours</span></div>
+        <div class="counter-cell"><span id="minutes" class="value">0</span><span class="unit">Mins</span></div>
+        <div class="counter-cell"><span id="seconds" class="value">0</span><span class="unit">Secs</span></div>
       </div>
-      <div class="pt-4 border-t border-slate-200 dark:border-slate-700/50">
-        <span class="text-xs text-slate-500 dark:text-slate-400 block">Cigarettes Avoided</span>
-        <span id="cigsAvoided" class="text-2xl font-bold text-emerald-500 dark:text-emerald-400">0</span>
+      <div class="avoided">
+        <span class="label">Cigarettes Avoided</span>
+        <span id="cigsAvoided" class="value">0</span>
       </div>
     </section>
 
-    <!-- Chain grid -->
-    <section class="bg-slate-50 dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 space-y-3">
-      <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200">Don't Break The Chain</h3>
-      <p class="text-xs text-slate-500 dark:text-slate-400">Last 30 days, each filled square is a day you stayed smoke free.</p>
-      <div id="chainGrid" class="grid grid-cols-10 gap-1.5"></div>
+    <!-- Chain calendar, Atomic Habits visual measurement principle -->
+    <section class="card">
+      <h3>Don't Break The Chain</h3>
+      <p class="note">Last 30 days, each filled square is a day you stayed smoke free.</p>
+      <div id="chainGrid" class="chain-grid"></div>
     </section>
 
-    <section class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-2xl p-4 text-center">
-      <h3 class="text-sm font-semibold text-amber-700 dark:text-amber-300 mb-1">Having a Craving Right Now?</h3>
-      <p class="text-xs text-amber-700/70 dark:text-amber-200/70 mb-3">Cravings peak and fade within 3 minutes, so surf the wave.</p>
-      <button onclick="openCravingTool()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl text-sm transition">
-        RIDE THE CRAVING (3-Min Reset)
-      </button>
+    <section class="card craving-card">
+      <h3>Having a Craving Right Now?</h3>
+      <p class="lead">Cravings peak and fade within 3 minutes, so surf the wave.</p>
+      <button onclick="openCravingTool()" class="btn btn-amber">RIDE THE CRAVING (3-Min Reset)</button>
     </section>
 
-    <section class="bg-slate-50 dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 space-y-3">
-      <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200">Body Recovery</h3>
-      <div class="space-y-2 text-xs" id="milestoneContainer"></div>
+    <section class="card">
+      <h3>Body Recovery</h3>
+      <div id="milestoneContainer"></div>
     </section>
 
-    <section class="bg-slate-50 dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 space-y-3">
-      <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200">Daily Creative Prompt</h3>
-      <p id="poetPrompt" class="text-xs text-slate-600 dark:text-slate-300 italic bg-white dark:bg-slate-900/60 p-3 rounded-lg border border-slate-200 dark:border-slate-800"></p>
-      <textarea id="journalEntry" rows="3" maxlength="500" placeholder="Capture a quick thought or line here" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-indigo-500"></textarea>
-      <button onclick="handleSaveJournal()" class="w-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 text-xs py-2 rounded-lg font-medium transition">Save Reflection</button>
-      <div id="journalList" class="space-y-2 pt-2"></div>
+    <section class="card">
+      <h3>Daily Creative Prompt</h3>
+      <p id="poetPrompt" class="prompt-box"></p>
+      <textarea id="journalEntry" rows="3" maxlength="500" placeholder="Capture a quick thought or line here" class="input"></textarea>
+      <button onclick="handleSaveJournal()" class="btn btn-secondary" style="margin-top:.5rem;">Save Reflection</button>
+      <div id="journalList"></div>
     </section>
 
-    <div class="flex justify-between pt-2 text-xs">
-      <button onclick="handleLogSlip()" class="text-slate-400 dark:text-slate-500 hover:text-amber-500 dark:hover:text-amber-400 transition">Log a slip, restart the clock</button>
-      <button onclick="handleResetData()" class="text-slate-400 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-400 transition">Reset everything</button>
+    <div class="footer-actions">
+      <button onclick="handleLogSlip()">Log a slip, restart the clock</button>
+      <button onclick="handleResetData()">Reset everything</button>
     </div>
   </div>
 
-  <div id="cravingModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 max-w-sm w-full text-center space-y-4">
-      <div class="text-amber-500 dark:text-amber-400"><div class="spinner"></div></div>
-      <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">Breathe Through It</h3>
-      <p class="text-xs text-slate-600 dark:text-slate-300">Inhale for 4 seconds, hold for 4, exhale for 4, repeat until the timer hits zero.</p>
-      <div class="text-4xl font-mono font-bold text-amber-500 dark:text-amber-400" id="cravingTimer">03:00</div>
-      <div class="text-left bg-slate-100 dark:bg-slate-800/60 rounded-lg p-3 space-y-1">
-        <p class="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wide">Two minute rule, pick one now</p>
-        <p class="text-xs text-slate-700 dark:text-slate-300">Drink a full glass of water slowly.</p>
-        <p class="text-xs text-slate-700 dark:text-slate-300">Walk to the end of the street and back.</p>
-        <p class="text-xs text-slate-700 dark:text-slate-300">Do your habit stack replacement action.</p>
+  <div id="cravingModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="spinner"></div>
+      <h3>Breathe Through It</h3>
+      <p>Inhale for 4 seconds, hold for 4, exhale for 4, repeat until the timer hits zero.</p>
+      <div class="timer" id="cravingTimer">03:00</div>
+      <div class="two-min-box">
+        <p class="heading">Two minute rule, pick one now</p>
+        <p class="item">Drink a full glass of water slowly.</p>
+        <p class="item">Walk to the end of the street and back.</p>
+        <p class="item">Do your habit stack replacement action.</p>
       </div>
-      <p class="text-xs text-slate-500 dark:text-slate-400 italic">A craving is a sensation, not a command, it builds, peaks, and breaks like a wave.</p>
-      <button onclick="closeCravingTool()" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium py-2.5 rounded-xl border border-slate-200 dark:border-slate-700">
-        I Managed the Craving
-      </button>
+      <p style="font-style: italic;">A craving is a sensation, not a command, it builds, peaks, and breaks like a wave.</p>
+      <button onclick="closeCravingTool()" class="btn btn-secondary">I Managed the Craving</button>
     </div>
   </div>
 
 </main>
 
 <script>
-const STORAGE_KEY = 'clearskiesData';
-const THEME_KEY = 'clearskiesTheme';
+/*
+  Clear Skies data model, stored under localStorage key unmokedData
+  quitDate         number, epoch ms of the current streak start
+  cigsPerDay       number
+  identity         string, the identity statement from setup
+  habitCue         string, the trigger the user picked
+  habitReplacement string, the replacement action tied to that trigger
+  relapses         number, how many times the user has logged a slip
+  journal          array of { date: number, text: string }
+  All rendering that inserts user text uses textContent, never innerHTML,
+  so a journal entry or identity statement cannot inject markup or scripts.
+
+  Theme preference lives separately under localStorage key unmokedTheme
+  as 'dark' or 'light', kept apart from tracking data on purpose so a
+  theme change never touches quit progress.
+
+  DEFAULT_IDENTITY is the fallback shown before a real identity statement
+  is saved, change this one constant if you want a different default
+  quote for a fresh install.
+*/
+
+const STORAGE_KEY = 'unmokedData';
+const THEME_KEY = 'unmokedTheme';
+const DEFAULT_IDENTITY = 'Another year added with my kids.';
+
 let state = loadState();
 let dashboardInterval = null;
 let cravingInterval = null;
@@ -162,10 +359,7 @@ const HEALTH_MILESTONES = [
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (typeof parsed !== 'object' || parsed === null) return null;
-    return parsed;
+    return raw ? JSON.parse(raw) : null;
   } catch (e) {
     console.error('Could not read saved data, starting fresh.', e);
     return null;
@@ -173,16 +367,12 @@ function loadState() {
 }
 
 function persistState() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (e) {
-    console.error('Failed to save to localStorage', e);
-  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
 function initTheme() {
   let saved = null;
-  try { saved = localStorage.getItem(THEME_KEY); } catch (e) {}
+  try { saved = localStorage.getItem(THEME_KEY); } catch (e) { /* ignore, fall back below */ }
   const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   const isDark = saved ? saved === 'dark' : prefersDark;
   applyTheme(isDark);
@@ -201,14 +391,14 @@ function toggleTheme() {
 }
 
 function init() {
-  const hasQuitDate = state && typeof state.quitDate === 'number' && Number.isFinite(state.quitDate);
+  const hasQuitDate = state && Number.isFinite(state.quitDate);
   document.getElementById('setupSection').classList.toggle('hidden', hasQuitDate);
   document.getElementById('dashboardSection').classList.toggle('hidden', !hasQuitDate);
 
-  if (dashboardInterval) clearInterval(dashboardInterval);
+  clearInterval(dashboardInterval);
   if (!hasQuitDate) return;
 
-  document.getElementById('identityQuote').textContent = state.identity || 'Another year added with my kids.';
+  document.getElementById('identityQuote').textContent = state.identity || DEFAULT_IDENTITY;
   renderJournal();
   setRandomPrompt();
   updateDashboard();
@@ -225,10 +415,7 @@ function handleSaveSetup() {
   const habitCue = document.getElementById('habitCueInput').value.trim();
   const habitReplacement = document.getElementById('habitReplacementInput').value.trim();
 
-  if (!quitVal) return showSetupError('Pick a valid quit date and time.');
-  
-  const parsedDate = new Date(quitVal);
-  const quitDate = parsedDate.getTime();
+  const quitDate = quitVal ? new Date(quitVal).getTime() : NaN;
 
   if (!Number.isFinite(quitDate)) return showSetupError('Pick a valid quit date and time.');
   if (!Number.isFinite(cigsVal) || cigsVal <= 0) return showSetupError('Cigarettes per day must be a positive number.');
@@ -236,11 +423,11 @@ function handleSaveSetup() {
   state = {
     quitDate,
     cigsPerDay: cigsVal,
-    identity: identity || 'Another year added with my kids.',
+    identity: identity || DEFAULT_IDENTITY,
     habitCue,
     habitReplacement,
-    relapses: (state && typeof state.relapses === 'number') ? state.relapses : 0,
-    journal: (state && Array.isArray(state.journal)) ? state.journal : []
+    relapses: state?.relapses || 0,
+    journal: state?.journal || []
   };
   persistState();
   init();
@@ -253,7 +440,7 @@ function showSetupError(message) {
 }
 
 function updateDashboard() {
-  if (!state || !Number.isFinite(state.quitDate)) return;
+  if (!state) return;
   const now = Date.now();
   const diffMs = Math.max(0, now - state.quitDate);
 
@@ -268,7 +455,7 @@ function updateDashboard() {
   document.getElementById('seconds').textContent = seconds;
 
   const totalHoursElapsed = diffMs / (1000 * 60 * 60);
-  const cigsAvoided = Math.floor((totalHoursElapsed / 24) * (state.cigsPerDay || 0));
+  const cigsAvoided = Math.floor((totalHoursElapsed / 24) * state.cigsPerDay);
   document.getElementById('cigsAvoided').textContent = cigsAvoided;
 
   renderMilestones(totalHoursElapsed);
@@ -277,19 +464,17 @@ function updateDashboard() {
 
 function renderMilestones(hoursElapsed) {
   const container = document.getElementById('milestoneContainer');
-  container.replaceChildren();
-  
+  container.innerHTML = '';
   HEALTH_MILESTONES.forEach(m => {
     const achieved = hoursElapsed >= m.hours;
     const row = document.createElement('div');
-    row.className = `flex items-center space-x-3 p-2.5 rounded-xl border ${achieved ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/50 text-slate-800 dark:text-slate-200' : 'bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500'}`;
+    row.className = `milestone-row${achieved ? ' achieved' : ''}`;
 
     const marker = document.createElement('span');
-    marker.className = `w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${achieved ? 'bg-emerald-500 text-white' : 'border border-slate-300 dark:border-slate-600'}`;
+    marker.className = 'milestone-marker';
     marker.textContent = achieved ? '\u2713' : '';
 
     const text = document.createElement('p');
-    text.className = achieved ? 'font-medium flex-1' : 'flex-1';
     text.textContent = m.label;
 
     row.append(marker, text);
@@ -299,15 +484,12 @@ function renderMilestones(hoursElapsed) {
 
 function renderChain(daysElapsed) {
   const grid = document.getElementById('chainGrid');
-  grid.replaceChildren();
-  
+  grid.innerHTML = '';
   const cellsToShow = 30;
   const filledCount = Math.min(daysElapsed + 1, cellsToShow);
-  
   for (let i = 0; i < cellsToShow; i++) {
     const cell = document.createElement('div');
-    const filled = i < filledCount;
-    cell.className = `chain-cell ${filled ? 'bg-emerald-500' : 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`;
+    cell.className = `chain-cell${i < filledCount ? ' filled' : ''}`;
     grid.appendChild(cell);
   }
 }
@@ -322,10 +504,7 @@ function handleSaveJournal() {
   const text = input.value.trim();
   if (!text) return;
 
-  if (!Array.isArray(state.journal)) {
-    state.journal = [];
-  }
-  
+  state.journal = state.journal || [];
   state.journal.unshift({ date: Date.now(), text });
   state.journal = state.journal.slice(0, 20);
   persistState();
@@ -335,19 +514,17 @@ function handleSaveJournal() {
 
 function renderJournal() {
   const list = document.getElementById('journalList');
-  list.replaceChildren();
-  
-  const entries = Array.isArray(state?.journal) ? state.journal : [];
-  entries.forEach(entry => {
+  list.innerHTML = '';
+  (state.journal || []).forEach(entry => {
     const item = document.createElement('div');
-    item.className = 'bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5';
+    item.className = 'journal-entry';
 
     const date = document.createElement('p');
-    date.className = 'text-[10px] text-slate-400 dark:text-slate-500 mb-1';
+    date.className = 'date';
     date.textContent = new Date(entry.date).toLocaleString();
 
     const text = document.createElement('p');
-    text.className = 'text-xs text-slate-600 dark:text-slate-300';
+    text.className = 'text';
     text.textContent = entry.text;
 
     item.append(date, text);
@@ -361,24 +538,18 @@ function openCravingTool() {
   const timerEl = document.getElementById('cravingTimer');
   timerEl.textContent = '03:00';
 
-  if (cravingInterval) clearInterval(cravingInterval);
+  clearInterval(cravingInterval);
   cravingInterval = setInterval(() => {
     timeLeft--;
     const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
     const s = (timeLeft % 60).toString().padStart(2, '0');
     timerEl.textContent = `${m}:${s}`;
-    if (timeLeft <= 0) {
-      clearInterval(cravingInterval);
-      cravingInterval = null;
-    }
+    if (timeLeft <= 0) clearInterval(cravingInterval);
   }, 1000);
 }
 
 function closeCravingTool() {
-  if (cravingInterval) {
-    clearInterval(cravingInterval);
-    cravingInterval = null;
-  }
+  clearInterval(cravingInterval);
   document.getElementById('cravingModal').classList.add('hidden');
 }
 
@@ -392,15 +563,10 @@ function handleLogSlip() {
 
 function handleResetData() {
   if (!confirm('This clears your quit date, journal, and settings completely, are you sure?')) return;
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch (e) {
-    console.error('Could not access storage to clear data', e);
-  }
-  if (dashboardInterval) clearInterval(dashboardInterval);
-  if (cravingInterval) clearInterval(cravingInterval);
+  localStorage.removeItem(STORAGE_KEY);
+  clearInterval(dashboardInterval);
   state = null;
-  document.getElementById('identityInput').value = '';
+  document.getElementById('identityInput').value = DEFAULT_IDENTITY;
   document.getElementById('quitInput').value = '';
   document.getElementById('cigsPerDayInput').value = '20';
   document.getElementById('habitCueInput').value = '';
